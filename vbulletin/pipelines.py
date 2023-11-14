@@ -10,6 +10,10 @@ import datetime
 from scrapy.exceptions import DropItem
 from vbulletin.items import PostItem, UserItem, ThreadItem
 
+import json
+
+from itemadapter import ItemAdapter
+
 # Adapted from
 # http://doc.scrapy.org/en/stable/topics/item-pipeline.html#write-items-to-mongodb
 
@@ -56,4 +60,18 @@ class MongoPipeline(object):
         # else:
         #     # not a duplicate, add it
         #     self.db[item.collection].insert(insert_dict)
+        return item
+
+
+
+class JsonWriterPipeline:
+    def open_spider(self, spider):
+        self.file = open("items.jsonl", "w")
+
+    def close_spider(self, spider):
+        self.file.close()
+
+    def process_item(self, item, spider):
+        line = json.dumps(ItemAdapter(item).asdict()) + "\n"
+        self.file.write(line)
         return item

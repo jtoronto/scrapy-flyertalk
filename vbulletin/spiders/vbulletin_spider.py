@@ -19,7 +19,7 @@ class VbulletinSpider(scrapy.Spider):
         domain = getattr(self, "domain", None)
         url = getattr(self, "url", None)
 
-        self.allowed_domains = [domain]
+        self.allowed_domains = ["flyertalk.com"]
         self.start_urls = [url]
 
     def paginate(self, response, next_page_callback):
@@ -32,26 +32,25 @@ class VbulletinSpider(scrapy.Spider):
         if next_page:
             url = response.urljoin(next_page.extract_first())
             logging.info("NEXT PAGE IS: %s" % url)
-            return scrapy.Request(url, next_page_callback)
+            return scrapy.Request(url, next_page_callback, errback=self.logError)
         else:
             logging.info("NO MORE PAGES FOUND")
             return None
 
     def parse(self, response):
-        # Parse the board (aka index) for forum URLs
-        forum_urls = response.xpath('.//td[contains(@id,"f")]/div/a[not(contains(@href,"wiki"))]/@href').extract()
-        for url in forum_urls:
-            yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
-
-    def parse_forum(self, response):
         logging.info("STARTING NEW FORUM SCRAPE (GETTING THREADS)")
-        thread_urls = response.xpath('.//a[contains(@id,"thread_title")]/@href').extract()
+        thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
         for url in thread_urls:
-            yield scrapy.Request(response.urljoin(url), callback=self.parse_posts)
+             yield scrapy.Request(response.urljoin(url), callback=self.parse_posts, errback=self.logError)
+             
 
         # return the next forum page if it exists
-        yield self.paginate(response, next_page_callback=self.parse_forum)
+        yield self.paginate(response, next_page_callback=self.parse)
 
+
+    def logError(self, error):
+        logging.error(error);
+    
     def parse_posts(self, response):
         logging.info("STARTING NEW PAGE SCRAPE")
 
@@ -61,27 +60,27 @@ class VbulletinSpider(scrapy.Spider):
         try:
             thread['thread_id'] = to_int(re.findall(self.patterns['thread_id'], response.url)[0])
             # thread['thread_name'] = response.xpath('.//meta[@name="og:title"]/@content').extract_first()
-            thread['thread_name'] = response.xpath('.//td[@class="navbar"]/strong/span[@itemprop="title"]/text()').extract_first()
+            thread['thread_name'] = response.xpath("normalize-space(//h1[@class='threadtitle'])").extract_first()
             # thread['thread_path'] = response.xpath('.//div/table//tr/td/table//tr/td[3]//a/text()').extract()
-            thread['thread_path'] = response.xpath('.//td/span[@itemscope="itemscope"]/span[@class="navbar"]/a/span[@itemprop="title"]/text()').extract()
+            # thread['thread_path'] = response.xpath('.//td/span[@itemscope="itemscope"]/span[@class="navbar"]/a/span[@itemprop="title"]/text()').extract()
             yield thread
         except Exception as e:
             self.logger.warning("Failed to extract thread data for thread: %s - error:\n %s", response.url, str(e))
             return
 
         # Scrape all the posts on a page for post & user info
-        for post in response.xpath("//table[contains(@id,'post')]"):
+        for post in response.xpath("//div[contains(@class,'tpost')]"):
             p = PostItem()
 
             p['thread_id'] = thread['thread_id']
             try:
-                p['timestamp'] = post.xpath(".//tr/td[@style='font-weight:normal'][1]/text()").extract()[1].strip()
+                # p['timestamp'] = post.xpath(".//tr/td[@style='font-weight:normal'][1]/text()").extract()[1].strip()
 
                 p['message'] = post.xpath(".//*[contains(@id,'post_message_')]").extract_first()
-                p['post_id'] = to_int(post.re_first('post\_message\_(\d+)'))
+                # p['post_id'] = to_int(post.re_first('post\_message\_(\d+)'))
 
-                # p['post_no'] = to_int(post.xpath(".//tr/td/div[@class='normal'][1]/a//text()").extract_first())
-                p['post_no'] = to_int(post.xpath(".//a[contains(@id, 'postcount')]/@href").re_first('post(\d+)\.html'))
+                # # p['post_no'] = to_int(post.xpath(".//tr/td/div[@class='normal'][1]/a//text()").extract_first())
+                # p['post_no'] = to_int(post.xpath(".//a[contains(@id, 'postcount')]/@href").re_first('post(\d+)\.html'))
                 yield p
             except Exception as e:
                 self.logger.warning("Failed to extract post for thread: %s - exception: %s, args: %s", response.url, type(e).__name__, str(e.args))
@@ -90,19 +89,19 @@ class VbulletinSpider(scrapy.Spider):
                 continue
 
             try:
-                p['user_id'] = to_int(post.xpath(".//a[@class='bigusername']/@href").re_first('\/(\d+)\.html'))
+                p['user_name'] = response.xpath("normalize-space(//a[@class='bigusername'])").extract_first()
             except Exception as e:
                 self.logger.warning("Failed to extract userid for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'])
                 p['user_id'] = -1
 
             # user info
-            user = UserItem()
-            try:
-                user['user_id'] = p['user_id']
-                user['user_name'] = post.xpath(".//a[@class='bigusername']//text()").extract_first()
-                yield user
-            except Exception as e:
-                self.logger.warning("Failed to extract user info for thread: %s - error: %s\n", response.url, str(e))
+            # user = UserItem()
+            # try:
+            #     user['user_id'] = p['user_id']
+            #     user['user_name'] = post.xpath(".//a[@class='bigusername']//text()").extract_first()
+            #     yield user
+            # except Exception as e:
+            #     self.logger.warning("Failed to extract user info for thread: %s - error: %s\n", response.url, str(e))
 
         # Pagination across thread: search for the link that the next button '>' points to, if any
         # next_page_request = self.paginate(next_page_callback=self.parse_posts)

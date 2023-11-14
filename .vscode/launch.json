@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+      {
+          "name": "Scrapy: Debug",
+          "type": "python",
+          "request": "launch",
+          "justMyCode": false,
+          "program": "~/miniconda3/envs/myscrapyenv/bin/scrapy",
+          "args": [
+              "crawl",
+              "vbulletin",
+              "-o",
+              "test.json",
+              "-a",
+              "url=https://www.flyertalk.com/forum/american-airlines-aadvantage-733/"
+          ],
+          // ... other configurations ...
+      }
+  ]
+}

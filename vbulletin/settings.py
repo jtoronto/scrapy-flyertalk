@@ -19,6 +19,8 @@ NEWSPIDER_MODULE = 'vbulletin.spiders'
 # Spider persistence
 JOBDIR = 'job_state'
 
+ROBOTSTXT_OBEY=False
+
 # MongoDB settings
 MONGO_URI = 'mongodb://10.10.10.23:27017/'
 MONGO_DATABASE = 'vbulletin'
@@ -31,7 +33,7 @@ CAPTCHA_API_KEY = ""
 
 # logging options
 LOG_FILE = '%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0'
@@ -80,7 +82,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'vbulletin.pipelines.MongoPipeline': 300,
+    # 'vbulletin.pipelines.MongoPipeline': 300,
+    'vbulletin.pipelines.JsonWriterPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
