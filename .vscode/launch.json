@@ -11,7 +11,7 @@
               "crawl",
               "vbulletin",
               "-a",
-              "url=https://www.flyertalk.com/forum/american-airlines-aadvantage-733/"
+              "url=https://www.flyertalk.com/forum/"
           ],
       }
   ]

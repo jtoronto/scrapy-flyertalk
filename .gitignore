@@ -3,3 +3,4 @@
 *.log
 job_state
 test.json
+items.json

@@ -38,18 +38,29 @@ class VbulletinSpider(scrapy.Spider):
             logging.info("NO MORE PAGES FOUND")
             return None
 
-    
     def parse(self, response):
+        # Parse the board (aka index) for forum URLs
+        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum')]/@href").extract()
+        for url in forum_urls:
+            yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
+
+    def parse_forum(self, response):
         logging.info("STARTING NEW FORUM SCRAPE (GETTING THREADS)")
         thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
+
+        subforum_urls = response.xpath("//div[@class='trow-group']//a[starts-with(@href, $rootUrl)]/@href", rootUrl=self.url).extract()
+        
+
+        
         for url in thread_urls:
              yield scrapy.Request(response.urljoin(url), callback=self.parse_posts, errback=self.logError)
              
+        for url in subforum_urls:
+            yield scrapy.Request(response.urljoin(url), callback=self.parse_forum, errback=self.logError)
 
         # return the next forum page if it exists
         pattern = "//a[@rel='next' and normalize-space(text()) = '>']/@href"
-        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse)
-
+        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse_forum)
 
     def logError(self, error):
         logging.error(error);
