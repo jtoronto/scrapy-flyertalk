@@ -40,22 +40,25 @@ class VbulletinSpider(scrapy.Spider):
 
     def parse(self, response):
         # Parse the board (aka index) for forum URLs
-        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum')]/@href").extract()
+        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
+
         for url in forum_urls:
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
 
     def parse_forum(self, response):
         logging.info("STARTING NEW FORUM SCRAPE (GETTING THREADS)")
         thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
-
-        subforum_urls = response.xpath("//div[@class='trow-group']//a[starts-with(@href, $rootUrl)]/@href", rootUrl=self.url).extract()
         
+        subforum_xpath_expression = f"//div[@class='trow-group']//a[starts-with(@href, '{self.url}') and not(contains(@href, '/members/'))]/@href"
+        subforum_urls = response.xpath(subforum_xpath_expression).extract()
 
         
         for url in thread_urls:
              yield scrapy.Request(response.urljoin(url), callback=self.parse_posts, errback=self.logError)
              
         for url in subforum_urls:
+            if "/members/" in url:
+                logging.error('FOUND ONE!')
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum, errback=self.logError)
 
         # return the next forum page if it exists
