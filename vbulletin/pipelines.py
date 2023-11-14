@@ -66,7 +66,7 @@ class MongoPipeline(object):
 
 class JsonWriterPipeline:
     def open_spider(self, spider):
-        self.file = open("items.jsonl", "w")
+        self.file = open("items.json", "w")
 
     def close_spider(self, spider):
         self.file.close()

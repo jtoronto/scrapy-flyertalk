@@ -10,12 +10,9 @@
           "args": [
               "crawl",
               "vbulletin",
-              "-o",
-              "test.json",
               "-a",
               "url=https://www.flyertalk.com/forum/american-airlines-aadvantage-733/"
           ],
-          // ... other configurations ...
       }
   ]
 }
