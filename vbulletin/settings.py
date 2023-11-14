@@ -33,7 +33,7 @@ CAPTCHA_API_KEY = ""
 
 # logging options
 LOG_FILE = '%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0'
