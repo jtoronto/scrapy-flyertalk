@@ -11,6 +11,7 @@ class VbulletinSpider(scrapy.Spider):
     name = 'vbulletin'
 
     patterns = {'thread_id': re.compile('\/(\d+)'),
+                # Remove this below one.
     'next_page_url': "//*[@class='pagenav']//*[@href and contains(text(), '>')]/@href" }
 
     def __init__(self, **kwargs):
@@ -22,12 +23,12 @@ class VbulletinSpider(scrapy.Spider):
         self.allowed_domains = ["flyertalk.com"]
         self.start_urls = [url]
 
-    def paginate(self, response, next_page_callback):
+    def paginate(self, response, pattern, next_page_callback):
         """Returns a scrapy.Request for the next page, or returns None if no next page found.
         response should be the Response object of the current page."""
         # This gives you the href of the '>' button to go to the next page
         # There are two identical ones with the same XPath, so just extract_first.
-        next_page = response.xpath(self.patterns['next_page_url'])
+        next_page = response.xpath(pattern)
 
         if next_page:
             url = response.urljoin(next_page.extract_first())
@@ -37,6 +38,7 @@ class VbulletinSpider(scrapy.Spider):
             logging.info("NO MORE PAGES FOUND")
             return None
 
+    
     def parse(self, response):
         logging.info("STARTING NEW FORUM SCRAPE (GETTING THREADS)")
         thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
@@ -45,7 +47,8 @@ class VbulletinSpider(scrapy.Spider):
              
 
         # return the next forum page if it exists
-        yield self.paginate(response, next_page_callback=self.parse)
+        pattern = "//a[@rel='next' and normalize-space(text()) = '>']/@href"
+        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse)
 
 
     def logError(self, error):
@@ -82,6 +85,7 @@ class VbulletinSpider(scrapy.Spider):
                 # # p['post_no'] = to_int(post.xpath(".//tr/td/div[@class='normal'][1]/a//text()").extract_first())
                 # p['post_no'] = to_int(post.xpath(".//a[contains(@id, 'postcount')]/@href").re_first('post(\d+)\.html'))
                 yield p
+
             except Exception as e:
                 self.logger.warning("Failed to extract post for thread: %s - exception: %s, args: %s", response.url, type(e).__name__, str(e.args))
                 if "div-gpt-ad" not in post.get():
@@ -90,8 +94,9 @@ class VbulletinSpider(scrapy.Spider):
 
             try:
                 p['user_name'] = response.xpath("normalize-space(//a[@class='bigusername'])").extract_first()
+
             except Exception as e:
-                self.logger.warning("Failed to extract userid for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'])
+                self.logger.warning("Failed to extract userid for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'], e)
                 p['user_id'] = -1
 
             # user info
@@ -108,7 +113,8 @@ class VbulletinSpider(scrapy.Spider):
         # if next_page_request:
             # yield next_page_request
         # WARNING TODO just trying this, it might be None
-        yield self.paginate(response, next_page_callback=self.parse_posts)
+        pattern = "//div[@id='mb_pagenav']//a[@id='mb_pagenext' and @class='button primary hollow']/@href"
+        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse_posts)
 
 # Post container: use this for each post
 
