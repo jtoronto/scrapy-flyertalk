@@ -22,7 +22,7 @@ JOBDIR = 'job_state'
 ROBOTSTXT_OBEY=False
 
 # MongoDB settings
-MONGO_URI = 'mongodb://10.10.10.23:27017/'
+MONGO_URI = 'mongodb://localhost:27017/'
 MONGO_DATABASE = 'vbulletin'
 
 # Cloudflare settings
@@ -82,7 +82,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    # 'vbulletin.pipelines.MongoPipeline': 300,
+    'vbulletin.pipelines.MongoPipeline': 300,
     'vbulletin.pipelines.JsonWriterPipeline': 300,
 }
 
