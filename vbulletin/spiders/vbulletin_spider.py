@@ -2,6 +2,9 @@ import scrapy
 import re
 from vbulletin.processors import to_int
 from vbulletin.items import PostItem, UserItem, ThreadItem
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+
 import logging
 
 
@@ -69,6 +72,33 @@ class VbulletinSpider(scrapy.Spider):
     def logError(self, error):
         logging.error(error);
     
+    def extractDate(self, post):
+        pattern = r'<!-- status icon and date -->(.*?)<!-- \/ status icon and date -->'
+
+        # Search for the pattern in the HTML content
+        match = re.search(pattern, post, re.DOTALL)
+
+        # Extract the text between the comments if a match is found
+        if match:
+            text_between_comments = match.group(1).strip()
+            text_between_comments = re.sub('<[^>]+>', '', text_between_comments)  # Remove HTML tags
+            date_str = text_between_comments.replace('\n', '').replace('\r', '').replace('\t', '')  # Remove newlines
+            custom_date_mappings = {
+                    'Yesterday': (datetime.now() - timedelta(days=1)).strftime('%b %d, %y'),
+                    'Today': datetime.now().strftime('%b %d, %y'),
+                }
+
+                # Replace custom date strings with actual date strings
+            for custom_date, actual_date in custom_date_mappings.items():
+                    date_str = date_str.replace(custom_date, actual_date)
+
+                # Parse the date string into a datetime object
+            parsed_date = datetime.strptime(date_str, '%b %d, %y, %I:%M %p')
+
+                # Convert the datetime object to ISO format
+            iso_date_str = parsed_date.isoformat()
+            return iso_date_str
+        
     def parse_posts(self, response):
         logging.info(f"STARTING NEW POSTS SCRAPE AT:{response.url}")
 
@@ -92,7 +122,7 @@ class VbulletinSpider(scrapy.Spider):
 
             p['thread_id'] = thread['thread_id']
             try:
-                # p['timestamp'] = post.xpath(".//tr/td[@style='font-weight:normal'][1]/text()").extract()[1].strip()
+                p['timestamp'] = self.extractDate(post.get())
                 extract = post.xpath(".//*[contains(@id,'post_message_')]")
                 p['message'] = ''.join(extract.xpath('./node()').extract())
                 post_id_str = extract.xpath("@id").get()
