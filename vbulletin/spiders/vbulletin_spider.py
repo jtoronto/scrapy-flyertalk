@@ -93,12 +93,12 @@ class VbulletinSpider(scrapy.Spider):
             p['thread_id'] = thread['thread_id']
             try:
                 # p['timestamp'] = post.xpath(".//tr/td[@style='font-weight:normal'][1]/text()").extract()[1].strip()
-
-                p['message'] = post.xpath(".//*[contains(@id,'post_message_')]").extract_first()
-                # p['post_id'] = to_int(post.re_first('post\_message\_(\d+)'))
-
-                # # p['post_no'] = to_int(post.xpath(".//tr/td/div[@class='normal'][1]/a//text()").extract_first())
-                # p['post_no'] = to_int(post.xpath(".//a[contains(@id, 'postcount')]/@href").re_first('post(\d+)\.html'))
+                extract = post.xpath(".//*[contains(@id,'post_message_')]")
+                p['message'] = ''.join(extract.xpath('./node()').extract())
+                post_id_str = extract.xpath("@id").get()
+                p['post_id'] = ''.join(filter(str.isdigit, post_id_str))
+                p['user_name'] = post.xpath("//a[@class='bigusername']/text()").get()
+                
                 yield p
 
             except Exception as e:
