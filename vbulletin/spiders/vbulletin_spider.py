@@ -46,19 +46,20 @@ class VbulletinSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
 
     def parse_forum(self, response):
-        logging.info("STARTING NEW FORUM SCRAPE (GETTING THREADS)")
+        logging.info(f"STARTING NEW FORUM SCRAPE (GETTING THREADS) at {response.url}")
         thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
-        
+
+        logging.debug(f"Thread URLs found: {thread_urls}");
+
         subforum_xpath_expression = f"//div[@class='trow-group']//a[starts-with(@href, '{self.url}') and not(contains(@href, '/members/'))]/@href"
         subforum_urls = response.xpath(subforum_xpath_expression).extract()
 
+        logging.debug(f"Subforum URLs found: {subforum_urls}");
         
         for url in thread_urls:
              yield scrapy.Request(response.urljoin(url), callback=self.parse_posts, errback=self.logError)
              
         for url in subforum_urls:
-            if "/members/" in url:
-                logging.error('FOUND ONE!')
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum, errback=self.logError)
 
         # return the next forum page if it exists
@@ -69,7 +70,7 @@ class VbulletinSpider(scrapy.Spider):
         logging.error(error);
     
     def parse_posts(self, response):
-        logging.info("STARTING NEW PAGE SCRAPE")
+        logging.info(f"STARTING NEW POSTS SCRAPE AT:{response.url}")
 
         # Get info about thread
         # TODO: move this into parse_forum, b/c here the code runs every page of the thread
