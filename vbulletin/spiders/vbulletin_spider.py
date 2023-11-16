@@ -43,8 +43,8 @@ class VbulletinSpider(scrapy.Spider):
 
     def parse(self, response):
         # Parse the board (aka index) for forum URLs
-        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
-
+        # forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
+        forum_urls = ["https://www.flyertalk.com/forum/american-airlines-aadvantage-733/"]
         for url in forum_urls:
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
 
@@ -102,15 +102,12 @@ class VbulletinSpider(scrapy.Spider):
     def parse_posts(self, response):
         logging.info(f"STARTING NEW POSTS SCRAPE AT:{response.url}")
 
-        # Get info about thread
-        # TODO: move this into parse_forum, b/c here the code runs every page of the thread
         thread = ThreadItem()
         try:
             thread['thread_id'] = to_int(re.findall(self.patterns['thread_id'], response.url)[0])
             # thread['thread_name'] = response.xpath('.//meta[@name="og:title"]/@content').extract_first()
             thread['thread_name'] = response.xpath("normalize-space(//h1[@class='threadtitle'])").extract_first()
-            # thread['thread_path'] = response.xpath('.//div/table//tr/td/table//tr/td[3]//a/text()').extract()
-            # thread['thread_path'] = response.xpath('.//td/span[@itemscope="itemscope"]/span[@class="navbar"]/a/span[@itemprop="title"]/text()').extract()
+
             yield thread
         except Exception as e:
             self.logger.warning("Failed to extract thread data for thread: %s - error:\n %s", response.url, str(e))
@@ -124,11 +121,16 @@ class VbulletinSpider(scrapy.Spider):
             try:
                 p['timestamp'] = self.extractDate(post.get())
                 extract = post.xpath(".//*[contains(@id,'post_message_')]")
-                p['message'] = ''.join(extract.xpath('./node()').extract())
+                p['raw_message'] = ''.join(extract.xpath('./node()').extract())
                 post_id_str = extract.xpath("@id").get()
                 p['post_id'] = ''.join(filter(str.isdigit, post_id_str))
-                p['user_name'] = post.xpath("//a[@class='bigusername']/text()").get()
+                p['user_name'] = post.xpath(".//a[@class='bigusername']/text()").get()
+                p['post_no'] = post.xpath('.//div[@class="trow-group"]//a/strong/text()').extract_first()
+                p['post_url'] = post.xpath('.//div[@class="tcell text-right"]//a/@href').extract_first()
+               
+                print(p['post_no'], p['post_url'])
                 
+
                 yield p
 
             except Exception as e:
