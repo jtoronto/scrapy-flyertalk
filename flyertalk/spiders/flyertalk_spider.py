@@ -11,10 +11,6 @@ import logging
 class FlyertalkSpider(scrapy.Spider):
     name = 'flyertalk'
 
-    patterns = {'thread_id': re.compile('\/(\d+)'),
-                # Remove this below one.
-    'next_page_url': "//*[@class='pagenav']//*[@href and contains(text(), '>')]/@href" }
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -41,8 +37,8 @@ class FlyertalkSpider(scrapy.Spider):
 
     def parse(self, response):
         # Parse the board (aka index) for forum URLs
-        # forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
-        forum_urls = ["https://www.flyertalk.com/forum/american-airlines-aadvantage-733/"]
+        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
+        
         for url in forum_urls:
             yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
 
@@ -66,36 +62,6 @@ class FlyertalkSpider(scrapy.Spider):
         # return the next forum page if it exists
         pattern = "//a[@rel='next' and normalize-space(text()) = '>']/@href"
         yield self.paginate(response, pattern=pattern, next_page_callback=self.parse_forum)
-
-    def logError(self, error):
-        logging.error(error);
-    
-    def extractDate(self, post):
-        pattern = r'<!-- status icon and date -->(.*?)<!-- \/ status icon and date -->'
-
-        # Search for the pattern in the HTML content
-        match = re.search(pattern, post, re.DOTALL)
-
-        # Extract the text between the comments if a match is found
-        if match:
-            text_between_comments = match.group(1).strip()
-            text_between_comments = re.sub('<[^>]+>', '', text_between_comments)  # Remove HTML tags
-            date_str = text_between_comments.replace('\n', '').replace('\r', '').replace('\t', '')  # Remove newlines
-            custom_date_mappings = {
-                    'Yesterday': (datetime.now() - timedelta(days=1)).strftime('%b %d, %y'),
-                    'Today': datetime.now().strftime('%b %d, %y'),
-                }
-
-                # Replace custom date strings with actual date strings
-            for custom_date, actual_date in custom_date_mappings.items():
-                    date_str = date_str.replace(custom_date, actual_date)
-
-                # Parse the date string into a datetime object
-            parsed_date = datetime.strptime(date_str, '%b %d, %y, %I:%M %p')
-
-                # Convert the datetime object to ISO format
-            iso_date_str = parsed_date.isoformat()
-            return iso_date_str
         
     def parse_posts(self, response):
         logging.info(f"STARTING NEW POSTS SCRAPE AT:{response.url}")
@@ -103,7 +69,7 @@ class FlyertalkSpider(scrapy.Spider):
         thread = ThreadItem()
         try:
             thread['thread_id'] = to_int(re.findall(self.patterns['thread_id'], response.url)[0])
-            # thread['thread_name'] = response.xpath('.//meta[@name="og:title"]/@content').extract_first()
+        
             thread['thread_name'] = response.xpath("normalize-space(//h1[@class='threadtitle'])").extract_first()
 
             yield thread
@@ -138,38 +104,40 @@ class FlyertalkSpider(scrapy.Spider):
                 p['user_name'] = response.xpath("normalize-space(//a[@class='bigusername'])").extract_first()
 
             except Exception as e:
-                self.logger.warning("Failed to extract userid for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'], e)
-                p['user_id'] = -1
-
-            # user info
-            # user = UserItem()
-            # try:
-            #     user['user_id'] = p['user_id']
-            #     user['user_name'] = post.xpath(".//a[@class='bigusername']//text()").extract_first()
-            #     yield user
-            # except Exception as e:
-            #     self.logger.warning("Failed to extract user info for thread: %s - error: %s\n", response.url, str(e))
+                self.logger.warning("Failed to extract username for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'], e)
+                p['user_name'] = "unknown"
 
         # Pagination across thread: search for the link that the next button '>' points to, if any
-        # next_page_request = self.paginate(next_page_callback=self.parse_posts)
-        # if next_page_request:
-            # yield next_page_request
-        # WARNING TODO just trying this, it might be None
+
         pattern = "//div[@id='mb_pagenav']//a[@id='mb_pagenext' and @class='button primary hollow']/@href"
         yield self.paginate(response, pattern=pattern, next_page_callback=self.parse_posts)
 
-# Post container: use this for each post
+    def logError(self, error):
+        logging.error(error);
+    
+    def extractDate(self, post):
+        pattern = r'<!-- status icon and date -->(.*?)<!-- \/ status icon and date -->'
 
-# //table[contains(@id,'post')]
+        # Search for the pattern in the HTML content
+        match = re.search(pattern, post, re.DOTALL)
 
-# Name (<a> with link to member page): ... /a[@class='bigusername']
-# Get member page link URL with:
-# ... a[@class='bigusername']/@href
+        # Extract the text between the comments if a match is found
+        if match:
+            text_between_comments = match.group(1).strip()
+            text_between_comments = re.sub('<[^>]+>', '', text_between_comments)  # Remove HTML tags
+            date_str = text_between_comments.replace('\n', '').replace('\r', '').replace('\t', '')  # Remove newlines
+            custom_date_mappings = {
+                    'Yesterday': (datetime.now() - timedelta(days=1)).strftime('%b %d, %y'),
+                    'Today': datetime.now().strftime('%b %d, %y'),
+                }
 
-# You could get name text with
-# ... a[@class='bigusername']/text()
-# you could also use userid to look up info later...
+                # Replace custom date strings with actual date strings
+            for custom_date, actual_date in custom_date_mappings.items():
+                    date_str = date_str.replace(custom_date, actual_date)
 
-# Post messages:
-# ... [contains(@id,'post_message_')]
+                # Parse the date string into a datetime object
+            parsed_date = datetime.strptime(date_str, '%b %d, %y, %I:%M %p')
 
+                # Convert the datetime object to ISO format
+            iso_date_str = parsed_date.isoformat()
+            return iso_date_str

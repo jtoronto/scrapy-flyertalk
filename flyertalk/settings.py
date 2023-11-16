@@ -19,7 +19,7 @@ NEWSPIDER_MODULE = 'flyertalk.spiders'
 # Spider persistence
 JOBDIR = 'job_state'
 
-ROBOTSTXT_OBEY=False
+ROBOTSTXT_OBEY=True
 
 # MongoDB settings
 MONGO_URI = 'mongodb://localhost:27017/'
@@ -53,7 +53,7 @@ USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74
 COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
-TELNETCONSOLE_ENABLED = False
+TELNETCONSOLE_ENABLED = True
 
 # Override the default request headers:
 #DEFAULT_REQUEST_HEADERS = {
@@ -83,7 +83,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'flyertalk.pipelines.MongoPipeline': 300,
-    'flyertalk.pipelines.JsonWriterPipeline': 300,
+    # 'flyertalk.pipelines.JsonWriterPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
