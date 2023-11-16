@@ -23,9 +23,10 @@ class PostItem(scrapy.Item):
     post_id = scrapy.Field()
     user_name = scrapy.Field()
     timestamp = scrapy.Field()
-    message = scrapy.Field()
+    raw_message = scrapy.Field()
     quotes = scrapy.Field()
     post_no = scrapy.Field()
+    post_url = scrapy.Field()
     # post_no is shown on upper right of each post container.
 
 class UserItem(scrapy.Item):

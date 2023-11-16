@@ -2,7 +2,7 @@ import datetime
 import logging
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for vbulletin project
+# Scrapy settings for flyertalk project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -11,10 +11,10 @@ import logging
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'vbulletin'
+BOT_NAME = 'flyertalk'
 
-SPIDER_MODULES = ['vbulletin.spiders']
-NEWSPIDER_MODULE = 'vbulletin.spiders'
+SPIDER_MODULES = ['flyertalk.spiders']
+NEWSPIDER_MODULE = 'flyertalk.spiders'
 
 # Spider persistence
 JOBDIR = 'job_state'
@@ -23,7 +23,7 @@ ROBOTSTXT_OBEY=False
 
 # MongoDB settings
 MONGO_URI = 'mongodb://localhost:27017/'
-MONGO_DATABASE = 'vbulletin'
+MONGO_DATABASE = 'flyertalk'
 
 # Cloudflare settings
 CAPTCHA_SOLVER = True
@@ -32,7 +32,7 @@ CAPTCHA_API_KEY = ""
 
 
 # logging options
-LOG_FILE = '%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
+# LOG_FILE = '%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
 LOG_LEVEL = logging.INFO
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -64,13 +64,13 @@ TELNETCONSOLE_ENABLED = False
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'vbulletin.middlewares.MyCustomSpiderMiddleware': 543,
+#    'flyertalk.middlewares.MyCustomSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'vbulletin.middlewares.CloudFlareMiddleware': 500,
+   'flyertalk.middlewares.CloudFlareMiddleware': 500,
 }
 
 # Enable or disable extensions
@@ -82,8 +82,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'vbulletin.pipelines.MongoPipeline': 300,
-    'vbulletin.pipelines.JsonWriterPipeline': 300,
+    'flyertalk.pipelines.MongoPipeline': 300,
+    'flyertalk.pipelines.JsonWriterPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

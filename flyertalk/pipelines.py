@@ -8,7 +8,7 @@
 import pymongo
 import datetime
 from scrapy.exceptions import DropItem
-from vbulletin.items import PostItem, UserItem, ThreadItem
+from flyertalk.items import PostItem, UserItem, ThreadItem
 
 import json
 

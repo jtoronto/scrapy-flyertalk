@@ -1,17 +1,15 @@
 import scrapy
 import re
-from vbulletin.processors import to_int
-from vbulletin.items import PostItem, UserItem, ThreadItem
+from flyertalk.processors import to_int
+from flyertalk.items import PostItem, UserItem, ThreadItem
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import logging
 
 
-# This is a vBulletin forum, I wonder if all of them have similar XPath selection targets???
-
-class VbulletinSpider(scrapy.Spider):
-    name = 'vbulletin'
+class FlyertalkSpider(scrapy.Spider):
+    name = 'flyertalk'
 
     patterns = {'thread_id': re.compile('\/(\d+)'),
                 # Remove this below one.
@@ -128,9 +126,6 @@ class VbulletinSpider(scrapy.Spider):
                 p['post_no'] = post.xpath('.//div[@class="trow-group"]//a/strong/text()').extract_first()
                 p['post_url'] = post.xpath('.//div[@class="tcell text-right"]//a/@href').extract_first()
                
-                print(p['post_no'], p['post_url'])
-                
-
                 yield p
 
             except Exception as e:

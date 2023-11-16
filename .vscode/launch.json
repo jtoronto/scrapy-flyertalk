@@ -9,7 +9,7 @@
           "program": "~/miniconda3/envs/myscrapyenv/bin/scrapy",
           "args": [
               "crawl",
-              "vbulletin",
+              "flyertalk",
               "-a",
               "url=https://www.flyertalk.com/forum/"
           ],
