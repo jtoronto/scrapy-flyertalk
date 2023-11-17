@@ -17,12 +17,12 @@ SPIDER_MODULES = ['flyertalk.spiders']
 NEWSPIDER_MODULE = 'flyertalk.spiders'
 
 # Spider persistence
-JOBDIR = 'job_state'
+JOBDIR = '/data/job_state'
 
 ROBOTSTXT_OBEY=True
 
 # MongoDB settings
-MONGO_URI = 'mongodb://localhost:27017/'
+MONGO_URI = 'mongodb://mongo:27017'
 MONGO_DATABASE = 'flyertalk'
 
 # Cloudflare settings
@@ -32,7 +32,7 @@ CAPTCHA_API_KEY = ""
 
 
 # logging options
-# LOG_FILE = '%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
+LOG_FILE = '/data/%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
 LOG_LEVEL = logging.INFO
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
