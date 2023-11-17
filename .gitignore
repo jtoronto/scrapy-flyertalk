@@ -4,3 +4,5 @@
 job_state
 test.json
 items.json
+build
+project.egg-info
