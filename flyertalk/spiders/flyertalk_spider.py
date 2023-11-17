@@ -10,15 +10,20 @@ import logging
 
 class FlyertalkSpider(scrapy.Spider):
     name = 'flyertalk'
+    patterns = {'thread_id': re.compile('\/(\d+)'),
+                # Remove this below one.
+    'next_page_url': "//*[@class='pagenav']//*[@href and contains(text(), '>')]/@href" }
+
+    url = "https://www.flyertalk.com/forum/"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         domain = getattr(self, "domain", None)
         url = getattr(self, "url", None)
-
+    
         self.allowed_domains = ["flyertalk.com"]
-        self.start_urls = [url]
+        self.start_urls = [self.url]
 
     def paginate(self, response, pattern, next_page_callback):
         """Returns a scrapy.Request for the next page, or returns None if no next page found.
