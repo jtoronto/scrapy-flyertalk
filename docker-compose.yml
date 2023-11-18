@@ -19,6 +19,8 @@ services:
       - ./scrapydweb_settings_v10.py:/app/scrapydweb_settings_v10.py
     environment:
       SCRAPYD_SERVERS: "[ http://scrapyd:6800 ] "
+      USERNAME: ${SCRAPYDWEB_USERNAME}
+      PASSWORD: ${SCRAPYDWEB_PASSWORD}      
 
   mongo:
     image: mongo:latest
@@ -26,6 +28,10 @@ services:
       - "27017:27017"
     volumes:
       - ~/scrapy_flyertalk_data/mongo_db:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
       
   mongo_express:
     image: mongo-express:latest
@@ -34,6 +40,8 @@ services:
     ports:
       - "8081:8081"
     environment:
-      # ME_CONFIG_MONGODB_ADMINUSERNAME: admin # Set your MongoDB admin username
-      # ME_CONFIG_MONGODB_ADMINPASSWORD: password # Set your MongoDB admin password
       ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_BASICAUTH_USERNAME: ${ME_CONFIG_BASICAUTH_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${ME_CONFIG_BASICAUTH_PASSWORD}
