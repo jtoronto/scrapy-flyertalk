@@ -30,10 +30,19 @@ class MongoPipeline(object):
 
     @classmethod
     def from_crawler(cls, crawler):
+        user = crawler.settings.get('MONGO_USER')
+        password = crawler.settings.get('MONGO_PASSWORD')
+        host = crawler.settings.get('MONGO_HOST', 'localhost')
+        port = crawler.settings.get('MONGO_PORT', 27017)
+        mongo_db = crawler.settings.get('MONGO_DATABASE', 'items')
+
+        mongo_uri = f"mongodb://{user}:{password}@{host}:{port}/{mongo_db}"
+
         return cls(
-            mongo_uri=crawler.settings.get('MONGO_URI'),
-            mongo_db=crawler.settings.get('MONGO_DATABASE', 'items')
+            mongo_uri=mongo_uri,
+            mongo_db=mongo_db
         )
+
 
     def open_spider(self, spider):
         self.client = pymongo.MongoClient(self.mongo_uri)

@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 # -*- coding: utf-8 -*-
 
 # Scrapy settings for flyertalk project
@@ -22,8 +23,11 @@ JOBDIR = '/data/job_state'
 ROBOTSTXT_OBEY=True
 
 # MongoDB settings
-MONGO_URI = 'mongodb://mongo:27017'
+MONGO_HOST= 'mongo'
+MONGO_PORT= 27017
 MONGO_DATABASE = 'flyertalk'
+MONGO_USER= os.environ.get('MONGO_USERNAME', '')
+MONGO_PASSWORD= os.environ.get('MONGO_PASSWORD', '')
 
 # Cloudflare settings
 CAPTCHA_SOLVER = True

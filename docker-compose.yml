@@ -8,6 +8,9 @@ services:
     volumes:
       - ~/scrapy_flyertalk_data/scrapyd:/data
       - ./scrapyd.conf:/etc/scrapyd/scrapyd.conf
+    environment:
+      MONGO_USERNAME: ${MONGO_SCRAPY_USER}
+      MONGO_PASSWORD: ${MONGO_SCRAPY_PWD}
 
   scrapydweb:
     image: ryanvin/scrapydweb:latest
@@ -28,10 +31,13 @@ services:
       - "27017:27017"
     volumes:
       - ~/scrapy_flyertalk_data/mongo_db:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js           
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-
+      MONGO_SCRAPY_USER: ${MONGO_SCRAPY_USER}
+      MONGO_SCRAPY_PWD: ${MONGO_SCRAPY_PWD}
+      MONGO_INITDB_DATABASE: 'flyertalk'
       
   mongo_express:
     image: mongo-express:latest
