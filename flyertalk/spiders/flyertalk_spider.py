@@ -93,7 +93,7 @@ class FlyertalkSpider(scrapy.Spider):
                 p['raw_message'] = ''.join(extract.xpath('./node()').extract())
                 post_id_str = extract.xpath("@id").get()
                 p['post_id'] = ''.join(filter(str.isdigit, post_id_str))
-                p['user_name'] = post.xpath(".//a[@class='bigusername']/text()").get()
+                p['user_name'] = post.xpath(".//a[@class='bigusername']/text() | .//a[@class='bigusername']//text()").get()
                 p['post_no'] = post.xpath('.//div[@class="trow-group"]//a/strong/text()').extract_first()
                 p['post_url'] = post.xpath('.//div[@class="tcell text-right"]//a/@href').extract_first()
                
