@@ -93,7 +93,15 @@ class FlyertalkSpider(scrapy.Spider):
                 p['raw_message'] = ''.join(extract.xpath('./node()').extract())
                 post_id_str = extract.xpath("@id").get()
                 p['post_id'] = ''.join(filter(str.isdigit, post_id_str))
-                p['user_name'] = post.xpath(".//a[@class='bigusername']/text() | .//a[@class='bigusername']//text()").get()
+                
+                username = post.xpath(".//a[@class='bigusername']/text() | .//a[@class='bigusername']//text()").get()
+                
+                if username is None:
+                  # Post was from a former user. We'll look for it this way.
+                  username = post.xpath(".//div[contains(@id,'postmenu_')]//text()").get().strip()
+                
+                p['user_name'] = username
+                
                 p['post_no'] = post.xpath('.//div[@class="trow-group"]//a/strong/text()').extract_first()
                 p['post_url'] = post.xpath('.//div[@class="tcell text-right"]//a/@href').extract_first()
                
