@@ -17,6 +17,13 @@ class FlyertalkSpider(scrapy.Spider):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # Set custom arguments or use default values
+        self.autothrottle_enabled = kwargs.get('autothrottle_enabled', True)
+        self.autothrottle_start_delay = int(kwargs.get('autothrottle_start_delay', 4))
+        self.autothrottle_max_delay = int(kwargs.get('autothrottle_max_delay', 60))
+        self.autothrottle_debug = kwargs.get('autothrottle_debug', True)
+
+        
         domain = getattr(self, "domain", None)
         url = getattr(self, "url", None)
     

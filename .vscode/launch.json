@@ -11,7 +11,15 @@
               "crawl",
               "flyertalk",
               "-a",
-              "url=https://www.flyertalk.com/forum/united-airlines-mileageplus-681/"
+              "url=https://www.flyertalk.com/forum/united-airlines-mileageplus-681/",
+              "-a",
+              "autothrottle_enabled=False",
+              "-a",
+              "autothrottle_start_delay=2",
+              "-a",
+              "autothrottle_max_delay=30",
+              "-a",
+              "autothrottle_debug=True"
           ],
       }
   ]
