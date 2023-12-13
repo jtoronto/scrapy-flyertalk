@@ -26,6 +26,7 @@ services:
       SCRAPYD_SERVERS: "[ http://scrapyd:6800 ] "
       USERNAME: ${SCRAPYDWEB_USERNAME}
       PASSWORD: ${SCRAPYDWEB_PASSWORD}      
+      DATA_ROOT_DIR: '/data'
 
   mongo:
     image: mongo:latest

@@ -24,8 +24,10 @@ class FlyertalkSpider(scrapy.Spider):
         self.autothrottle_debug = kwargs.get('autothrottle_debug', True)
 
         
-        domain = getattr(self, "domain", None)
-        url = getattr(self, "url", None)
+        # domain = getattr(self, "domain", None)
+        # url = getattr(self, "url", None)
+
+        url = kwargs.get('url', '')
     
         self.allowed_domains = ["flyertalk.com"]
         self.start_urls = [url]

@@ -63,7 +63,7 @@ LOCAL_SCRAPYD_SERVER = ''
 # python -c "from os.path import abspath, isdir; from scrapyd.config import Config; path = abspath(Config().get('logs_dir')); print(path); print(isdir(path))"
 # Check out https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir for more info.
 # e.g. 'C:/Users/username/logs' or '/home/username/logs'
-LOCAL_SCRAPYD_LOGS_DIR = '/data/scrapyd/logs'
+LOCAL_SCRAPYD_LOGS_DIR = os.environ.get('DATA_ROOT_DIR', '') + '/scrapyd/logs'
 
 # The default is False, set it to True to automatically run LogParser as a subprocess at startup.
 # Note that you can run the LogParser service separately via command 'logparser' as you like.
@@ -120,7 +120,7 @@ JOBS_SNAPSHOT_INTERVAL = 300
 ############################## Run Spider #####################################
 # The default is False, set it to True to automatically
 # expand the 'settings & arguments' section in the Run Spider page.
-SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = False
+SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = True
 
 # The default is 'Mozilla/5.0', set it a non-empty string to customize the default value of `custom`
 # in the drop-down list of `USER_AGENT`.

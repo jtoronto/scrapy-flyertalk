@@ -61,3 +61,14 @@ run the following command to egg the project and upload it to the scrapyd
 
 
 `scrapyd-deploy default -p flyertalk --include-dependencies`
+
+
+When starting a job from scrapydweb. Auto throttling is an argument, add (and customize) the following
+
+-d autothrottle_enabled=False
+-d autothrottle_start_delay=2
+-d autothrottle_max_delay=30
+-d autothrottle_debug=False
+
+-d autothrottle_enabled=False
+-d url=https://www.flyertalk.com/forum/united-airlines-mileageplus-681/  or whatever
