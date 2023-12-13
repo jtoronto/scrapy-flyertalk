@@ -18,12 +18,12 @@ SPIDER_MODULES = ['flyertalk.spiders']
 NEWSPIDER_MODULE = 'flyertalk.spiders'
 
 # Spider persistence
-JOBDIR = '/data/job_state'
+JOBDIR = os.environ.get('DATA_ROOT_DIR', '') + '/job_state'
 
 ROBOTSTXT_OBEY=True
 
 # MongoDB settings
-MONGO_HOST= 'mongo'
+MONGO_HOST= os.environ.get('MONGO_HOST', '')
 MONGO_PORT= 27017
 MONGO_DATABASE = 'flyertalk'
 MONGO_USER= os.environ.get('MONGO_USERNAME', '')
@@ -36,7 +36,7 @@ CAPTCHA_API_KEY = ""
 
 
 # logging options
-LOG_FILE = '/data/%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
+LOG_FILE = os.environ.get('DATA_ROOT_DIR', '') + '/%sdetect.log' % (datetime.datetime.now().strftime('%Y_%m_%d__%H_%M'))
 LOG_LEVEL = logging.INFO
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

@@ -11,6 +11,8 @@ services:
     environment:
       MONGO_USERNAME: ${MONGO_SCRAPY_USER}
       MONGO_PASSWORD: ${MONGO_SCRAPY_PWD}
+      DATA_ROOT_DIR: '/data'
+      MONGO_HOST: 'mongo'
 
   scrapydweb:
     image: ryanvin/scrapydweb:latest
