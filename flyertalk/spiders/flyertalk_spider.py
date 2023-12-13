@@ -14,8 +14,6 @@ class FlyertalkSpider(scrapy.Spider):
                 # Remove this below one.
     'next_page_url': "//*[@class='pagenav']//*[@href and contains(text(), '>')]/@href" }
 
-    url = "https://www.flyertalk.com/forum/"
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -23,7 +21,7 @@ class FlyertalkSpider(scrapy.Spider):
         url = getattr(self, "url", None)
     
         self.allowed_domains = ["flyertalk.com"]
-        self.start_urls = [self.url]
+        self.start_urls = [url]
 
     def paginate(self, response, pattern, next_page_callback):
         """Returns a scrapy.Request for the next page, or returns None if no next page found.
@@ -40,33 +38,25 @@ class FlyertalkSpider(scrapy.Spider):
             logging.info("NO MORE PAGES FOUND")
             return None
 
-    def parse(self, response):
-        # Parse the board (aka index) for forum URLs
-        forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
+    # def parse(self, response):
+    #     # Parse the board (aka index) for forum URLs
+    #     forum_urls = response.xpath("//div[@class='mobileMenu']//a[starts-with(@href, '/forum') and not(contains(@href, '/members/'))]/@href").extract()
         
-        for url in forum_urls:
-            yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
+    #     for url in forum_urls:
+    #         yield scrapy.Request(response.urljoin(url), callback=self.parse_forum)
 
-    def parse_forum(self, response):
+    def parse(self, response):
         logging.info(f"STARTING NEW FORUM SCRAPE (GETTING THREADS) at {response.url}")
         thread_urls = response.xpath('.//div[starts-with(@id, "td_threadtitle")]/div/h4/a[not(parent::span)]/@href').extract()
 
         logging.debug(f"Thread URLs found: {thread_urls}");
-
-        subforum_xpath_expression = f"//div[@class='trow-group']//a[starts-with(@href, '{self.url}') and not(contains(@href, '/members/'))]/@href"
-        subforum_urls = response.xpath(subforum_xpath_expression).extract()
-
-        logging.debug(f"Subforum URLs found: {subforum_urls}");
-        
+      
         for url in thread_urls:
              yield scrapy.Request(response.urljoin(url), callback=self.parse_posts, errback=self.logError)
              
-        for url in subforum_urls:
-            yield scrapy.Request(response.urljoin(url), callback=self.parse_forum, errback=self.logError)
-
         # return the next forum page if it exists
         pattern = "//a[@rel='next' and normalize-space(text()) = '>']/@href"
-        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse_forum)
+        yield self.paginate(response, pattern=pattern, next_page_callback=self.parse)
         
     def parse_posts(self, response):
         logging.info(f"STARTING NEW POSTS SCRAPE AT:{response.url}")
@@ -109,16 +99,8 @@ class FlyertalkSpider(scrapy.Spider):
 
             except Exception as e:
                 self.logger.warning("Failed to extract post for thread: %s - exception: %s, args: %s", response.url, type(e).__name__, str(e.args))
-                if "div-gpt-ad" not in post.get():
-                    self.logger.warning("Response %s html:\n %s", response.url, post.get())
                 continue
 
-            try:
-                p['user_name'] = response.xpath("normalize-space(//a[@class='bigusername'])").extract_first()
-
-            except Exception as e:
-                self.logger.warning("Failed to extract username for thread: %s, post: %d - defaulting to -1", response.url, p['post_id'], e)
-                p['user_name'] = "unknown"
 
         # Pagination across thread: search for the link that the next button '>' points to, if any
 
